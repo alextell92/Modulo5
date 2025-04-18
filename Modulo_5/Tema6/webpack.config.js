@@ -1,33 +1,51 @@
 const path = require("path");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const { OptimizationStages } = require("webpack");
-
+const yaml = require("yamljs");
+const json5 = require("json5");
+const workbox = require("workbox-webpack-plugin");
 module.exports = {
-  entry: path.join(__dirname, "src", "index.js"),
+  entry: "./src/index.js",
+  plugins:[
+      new workbox.GenerateSW({
+        clientsClaim: true,
+        skipWaiting: true,
+      }),
+  ],
   output: {
+    filename: "bundle.js",
     path: path.resolve(__dirname, "dist"),
   },
   module: {
     rules: [
       {
-        test: /\.?js$/,
-        exclude: /node-modules/,
-        use: {
-          loader: "babel-loader",
-          options:{
-            presets:[
-                "@babel/preset-env",
-                "@babel/preset-react"
-            ]
-          }
+        test: /\.css$/i,
+        use: ["style-loader", "css-loader"],
+      },
+      {
+        test: /\.s[ac]ss$/i,
+        use: ["style-loader", "css-loader",'sass-loader'],
+      },
+      {
+        test: /\.(png|jpg)$/i,
+        type: "asset/resource",
+      },
+      {
+        test: /\.csv$/i,
+        use: "csv-loader",
+      },
+      {
+        test: /\.yaml$/i,
+        type: 'json',
+        parser: {
+          parse: yaml.parse,
         }
-      }
-    ]
+      },
+      {
+        test: /\.json5$/i,
+        type: "json",
+        parser: {
+          parse: json5.parse,
+        },
+      },
+    ],
   },
-
-  plugins: [
-    new HtmlWebpackPlugin({
-      template: path.join(__dirname, "src", "index.html"),
-    }),
-  ],
 };
